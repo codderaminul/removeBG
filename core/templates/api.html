@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title%} Home Page {% endblock %}
+{% block body%}
+<div class="container mt-5 border-bottom border-bottom-10">
+    <div class="form-group mx-auto">
+        <form style="max-width: 550px;margin: 0 auto;">
+            {% csrf_token %}
+            <div id="custom" class="">
+                <label id="selectImage" for="inputTag">
+                    <i class="fa fa-2x fa-camera mt-3"></i> <br />
+                    Drop your WebP, PNG or JPEG files here!<br />
+                    <input id="inputTag" type="file" name="image" required />
+                    <br />
+                    <span class="" id="imageName"></span>
+                </label>
+            </div>
+            <input id="RemoveBG" class="btn btn-dark w-100 mt-3 mb-5" type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+<div class="d-flex justify-content-center d-none mt-5" id="loading">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+<div class="container my-5 d-none" id="image_output_block">
+    <div class="row output">
+        <div class="col-lg-8 col-sm-6">
+            <img  id="image_output" class="w-75 h-75" src="{{ image }}" />
+        </div>
+        <div class="col-lg-4 col-sm-6 my-auto">
+            <a id="image_output2" class="btn btn-success download-btn w-50 py-2 " href="{{ image }}" download="">Download</a>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // RemoveBG 
+    document.getElementById("RemoveBG").addEventListener("click", function (e) {
+        // set preventDefault
+        e.preventDefault();
+        // get CSRF token 
+        var CSRFToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+
+        // get image from the image remove form
+        var image = document.getElementById("inputTag").files[0];
+
+        console.log(image);
+
+        // Output image div
+        var image_output = document.getElementById("image_output")
+        var image_output2 = document.getElementById("image_output2")
+        var image_output_block = document.getElementById("image_output_block")
+        var loading = document.getElementById("loading")
+        OutputEventHandler(loading,1)
+        var formdata = new FormData();
+        formdata.append("image", image)
+        formdata.append("CSRFToken", CSRFToken)
+
+            fetch("http://127.0.0.1:8000/api/", {
+                method: "POST",
+                headers: new Headers(),
+                body: formdata,
+            })
+            .then((e) => e.json())
+            .then((e) => {
+                // set image path image_output
+                image_output.src = e.image
+                image_output2.href = e.image
+                OutputEventHandler(image_output_block,1)
+                OutputEventHandler(loading,2)
+            })
+            .catch((e) => {
+                OutputEventHandler(image_output_block,2)
+                console.log(e);
+            });
+        });
+        function OutputEventHandler(name, id){
+            if(id == 1){
+                name.classList.remove("d-none")
+                name.classList.add("block")
+            }else if (id == 2){
+                name.classList.remove("block")
+                name.classList.add("d-none")
+            }
+        }
+</script>
+
+{% endblock %}

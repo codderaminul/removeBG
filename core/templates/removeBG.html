@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title%} Home Page {% endblock %}
+{% block body%}
+<style>
+    #dropTarget {
+      width: 200px;
+      height: 200px;
+      border: 2px dashed gray;
+      margin-top: 20px;
+    }
+  </style>
+<div class="container mt-5">
+    <div class="header">
+        <h3 class="text-center fw-bold text-dark mb-4">Background Remover</h3>
+    </div>
+    <div class="form-group text-center upload mb-5">
+        <form>
+            {% csrf_token %}
+            <label class="btn btn-danger border-0 fw-bold px-4 pb-2 mb-3" id="uploadImage" for="inputTag" >Upload Image<br/></label>
+            <input class="" id="inputTag" type="file" name="image" required/><br>
+            <span class="" id="imageName" ></span><br>
+            <p>or drop a file here <br> CTRL+V to paste image or URL</p>
+
+            <div id="dropTarget" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+        </form>
+    </div>
+    <!-- <div class="d-flex justify-content-center align-items-center mb-5">
+        <p class="me-3">No image?<br>Try one of these:</p>
+        <img class="me-3" src="{% static "files/horse.jpg" %}" alt="" style="height: 40px; width: 40px;border-radius: 5px;">
+        <img class="me-3" src="{% static "files/horse.jpg" %}" alt="" style="height: 40px; width: 40px;border-radius: 5px;">
+        <img class="me-3" src="{% static "files/horse.jpg" %}" alt="" style="height: 40px; width: 40px;border-radius: 5px;">
+        <img class="me-3" src="{% static "files/horse.jpg" %}" alt="" style="height: 40px; width: 40px;border-radius: 5px;">
+    </div> -->
+    <div class="d-flex justify-content-center d-none my-5" id="loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mb-5 d-none" id="image_output_block">
+        <div class="d-flex justify-content-center py-3 w-100 w-lg-75 border row">
+            <div class="me-lg-5 col-12 col-lg-3">
+                <h4 class="text-center">Original</h4> 
+                <div class=" d-flex justify-content-center">
+                    <img id="orginal_img" class="me-3 mt-2 mb-3 col-8 col-lg-12" src="{{ image2 }}" alt="">
+                </div>
+            </div>
+            <div class="me-lg-5 col-12 col-lg-3">
+                <h4 class="text-center mt-sm-4 mt-lg-0">Result</h4>
+                <div class=" d-flex justify-content-center">
+                    <img id="image_output" class="me-3 mt-2 mb-3 col-8 col-lg-12" src="{{ image }}" alt="">
+                </div>
+                <h6 class="text-center">Auto Photo Editing Background</h6>
+            </div>
+            <div class=" col-12 col-lg-3">
+                <div class="d-flex mt-5 justify-content-center">
+                    <a class="text-decoration-none text-dark" href="">Change Background</a>
+                </div>
+                <div class="d-flex justify-content-center ms-1 my-3">
+                    <input class="me-4" type="color" name="r" id="r" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input class="me-4" type="color" name="g" id="g" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input class="me-4" type="color" name="b" id="b" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input class="me-4" type="color" name="a" id="a" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                </div>
+            
+                <div class="dropdown d-flex justify-content-center">
+                    <a id="image_output2" class="btn btn-secondary dropdown-toggle px-4" download href="{{image}}" style="border-radius: 15px;background: #0FBA54;border: none;">
+                        Download
+                    </a>
+                </div>
+                <p class="my-3 text-center">Preview Image 612*408 free</p>
+                <div class=" d-flex justify-content-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-danger fw-bold">Download HD</button>
+                        <button type="button" class="btn btn-outline-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("inputTag").addEventListener("change", function (e) {
+        e.preventDefault();
+        var CSRFToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        // get image from the image remove form
+        var image = document.getElementById("inputTag").files[0];
+        // Output image div
+        var image_output = document.getElementById("image_output")
+        var image_output2 = document.getElementById("image_output2")
+        var image_output_block = document.getElementById("image_output_block")
+        var loading = document.getElementById("loading")
+        var orginal_img = document.getElementById("orginal_img")
+
+        var reader = new FileReader();
+        reader.onload = function (readerEvent) {
+            orginal_img.src = readerEvent.target.result;
+        };
+        reader.readAsDataURL(image);
+        
+        
+        var dropArea = document.getElementById('inputTag');
+        // var imageElement = document.getElementById('imageElement');
+        dropArea.addEventListener('dragenter', preventDefault, false);
+        dropArea.addEventListener('dragover', preventDefault, false);
+        dropArea.addEventListener('dragleave', preventDefault, false);
+        dropArea.addEventListener('drop', preventDefault, false);
+        // Handle file drop event
+        dropArea.addEventListener('drop', handleDrop, false);
+        function preventDefault(event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        function handleDrop(event) {
+            var file = event.dataTransfer.files[0];
+            if (file && file.type.match('image.*')) {
+            var reader = new FileReader();
+            reader.onload = function (readerEvent) {
+                orginal_img.src = readerEvent.target.result;
+            };
+            reader.readAsDataURL(file);
+            }
+        }
+
+        OutputEventHandler(loading,1)
+        var formdata = new FormData();
+        formdata.append("image", image)
+        formdata.append("CSRFToken", CSRFToken)
+            fetch("http://127.0.0.1:8000/api/", {
+                method: "POST",
+                headers: new Headers(),
+                body: formdata,
+            })
+            .then((e) => e.json())
+            .then((e) => {
+                // set image path image_output
+                image_output.src = e.image
+                image_output2.href = e.image
+                //orginal_img.src = image.name
+                OutputEventHandler(image_output_block,1)
+                OutputEventHandler(loading,2)
+            })
+            .catch((e) => {
+                OutputEventHandler(image_output_block,2)
+                console.log(e);
+            });
+        });
+        function OutputEventHandler(name, id){
+            if(id == 1){
+                name.classList.remove("d-none")
+                name.classList.add("block")
+            }else if (id == 2){
+                name.classList.remove("block")
+                name.classList.add("d-none")
+            }
+        }
+</script>
+
+<script>
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      var files = event.dataTransfer.files;
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (file.type.match('image.*')) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            document.getElementById('dropTarget').appendChild(img);
+          }
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+  </script>
+
+{% endblock body%}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title%} Home Page {% endblock %}
+{% block body%}
+<div class="px-4">
+  <h5 class="px-1 py-3">My Shops All Products</h5>
+  {% for product in products %}
+    <div class="product box">
+      <div class="wrapper row">
+        <div class="col-sm-6 col-md- col-lg-8">
+            {% if product.images %}
+              <img src="{{ product.images.0.src }}"  style="width: 120px; height: 100px;"/>
+            {% endif %}
+            <div class="row">
+              <div class="mt-lg-3 col-sm-12 col-md-6">
+                <h4>{{ product.title }}</h4>
+                <p class="price">{{ product.price_range }} {{ current_shop.currency }}</p>
+              </div>
+              <div class="mt-lg-3 col-sm-12 col-md-6">
+                <p class="h6" style="margin-bottom: 0">{{ product.product_type }} <span class="note">type</span></p>
+                <p class="h6" style="margin: 0">{{ product.vendor }} <span class="note h6">vendor</span></p>
+              </div>
+            </div>
+        </div>
+        <div class="d-flex col-sm-6 col-md- col-lg-4 float-end">
+            <a class="btn btn-success my-auto ms-4"  style="height: 40px;" href="https://{{ current_shop.domain }}/admin/products/{{ product.id }}">Edit</a>
+            <a class="btn btn-success my-auto ms-4" style="height: 40px;"  href="{% url 'removeBG' product.id  %} ">Remove Background</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+
+    <em class="note">There are no products in your store.</em>
+  {% endfor %}
+</div>
+{% endblock %}

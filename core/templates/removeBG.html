@@ -18,13 +18,10 @@
     <div class="form-group text-center upload mb-5">
         <form>
             {% csrf_token %}
-            <label class="btn btn-danger border-0 fw-bold px-4 pb-2 mb-3" id="uploadImage" for="inputTag" >Upload Image<br/></label>
-            <input class="" id="inputTag" type="file" name="image" required/><br>
-            <span class="" id="imageName" ></span><br>
-            <p>or drop a file here <br> CTRL+V to paste image or URL</p>
-
-            <div id="dropTarget" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-
+            <label class="btn btn-danger border-0 fw-bold px-4 pb-2 mb-3 " id="uploadImage" for="inputTag" >Upload Image<br/></label>
+            <input class="" id="inputTag" type="file" name="image" value="{{image_url}}" required/><br>
+            <img class="mx-auto d-block" src="{{image_url}}" alt="" id="" style="height: 100px;width: 100px;border-radius: 20%;">
+            <span class="" id="imageName" >{{image_url}}</span><br>
         </form>
     </div>
     <!-- <div class="d-flex justify-content-center align-items-center mb-5">
@@ -59,10 +56,9 @@
                     <a class="text-decoration-none text-dark" href="">Change Background</a>
                 </div>
                 <div class="d-flex justify-content-center ms-1 my-3">
-                    <input class="me-4" type="color" name="r" id="r" style="height: 40px;width: 40px;border-style: none;padding: 0;">
-                    <input class="me-4" type="color" name="g" id="g" style="height: 40px;width: 40px;border-style: none;padding: 0;">
-                    <input class="me-4" type="color" name="b" id="b" style="height: 40px;width: 40px;border-style: none;padding: 0;">
-                    <input class="me-4" type="color" name="a" id="a" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input value="#e8d61c" class="me-4" type="color" name="r" id="first_color" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input value="#39ff33" class="me-4" type="color" name="g" id="second_color" style="height: 40px;width: 40px;border-style: none;padding: 0;">
+                    <input value="#766f75" class="me-4" type="color" name="b" id="third_color" style="height: 40px;width: 40px;border-style: none;padding: 0;">
                 </div>
             
                 <div class="dropdown d-flex justify-content-center">
@@ -84,13 +80,57 @@
     </div>
 </div>
 
+
+
+
 <script>
+ 
+    document.getElementById("first_color").addEventListener("change", function (e) {
+        var color = document.getElementById("first_color");
+        setBackground(color);
+    });
+    document.getElementById("second_color").addEventListener("change", function (e) {
+        var color = document.getElementById("second_color");
+        setBackground(color);
+    });
+    document.getElementById("third_color").addEventListener("change", function (e) {
+        var color = document.getElementById("third_color");
+        setBackground(color);
+    });
+
+    function setBackground(color){
+        var CSRFToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        var formdata = new FormData(); 
+        formdata.append("color",color.value)
+        formdata.append("imgData",image_output.src)
+        formdata.append("CSRFToken", CSRFToken)
+        fetch("http://127.0.0.1:8000/setBG/", {
+            method: "POST",
+            headers: new Headers(),
+            body: formdata,
+        })
+        .then((e) => e.json())
+        .then((e) => {
+            image_output.src = e.image
+            image_output2.href = e.image 
+        })
+        .catch((e) => {
+            
+            console.log(e);
+        });
+    }
+
+
     document.getElementById("inputTag").addEventListener("change", function (e) {
         e.preventDefault();
+        var imageInput = this;
+        if (imageInput.files && imageInput.files[0]) {
+            alert('load here');
+        }
+        
+        
         var CSRFToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
-        // get image from the image remove form
         var image = document.getElementById("inputTag").files[0];
-        // Output image div
         var image_output = document.getElementById("image_output")
         var image_output2 = document.getElementById("image_output2")
         var image_output_block = document.getElementById("image_output_block")

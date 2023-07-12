@@ -26,10 +26,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'shopify_apps.apps.ShopifyAppConfig',
     'core',
+    'shopify_apps',
     'widget_tweaks',
-    'rest_framework',
     'corsheaders',
+    'rest_framework',
     'fontawesomefree'
 ]
 
@@ -42,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'shopify_apps.middleware.LoginProtection',
 ]
 
 ROOT_URLCONF = 'RemoveBG.urls'
@@ -57,6 +60,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'shopify_apps.context_processors.current_shop',
             ],
         },
     },

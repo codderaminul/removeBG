@@ -40,3 +40,21 @@ class ImageUploadView(APIView):
         data_uri = f"data:image/png;base64,{encoded_image}"
         return Response({'image': data_uri})
 
+
+class setBG(APIView):
+    def post(self, request,format=None):
+        imageURI = request.POST.get('imgData')
+        color = request.POST.get('color')
+        image_data = imageURI.split(",")[1]
+        decoded_image_data = base64.b64decode(image_data)
+        with open("image.png", "wb") as file:
+            file.write(decoded_image_data)
+        image = Image.open("image.png").convert('RGBA')
+        image = remove(image)
+        background = Image.new("RGB", image.size, color)
+        result_image = Image.alpha_composite(background.convert("RGBA"), image.convert("RGBA"))
+        buffer = io.BytesIO()
+        result_image.save(buffer, format='PNG')
+        encoded_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        data_uri = f"data:image/png;base64,{encoded_image}"
+        return Response({'image': data_uri})
